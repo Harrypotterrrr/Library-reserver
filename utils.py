@@ -5,13 +5,6 @@ Headers = [
     "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.100 Safari/537.36",
 ]
 
-config_path = "./config.json"
-
-def load_config(config_path=config_path):
-    with open(config_path, "r", encoding='utf-8') as f:
-        config = json.load(f)
-    return config
-
 def str2params(sstr):
 
     params = {}

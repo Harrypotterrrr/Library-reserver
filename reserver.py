@@ -10,7 +10,7 @@ from http.cookies import SimpleCookie
 from requests.cookies import cookiejar_from_dict
 
 from utils import ColorPrint as cp
-from utils import load_config, str2params
+from utils import str2params
 
 class BaseSession:
 
@@ -34,11 +34,12 @@ class Reserver(BaseSession):
     def __init__(self, sess=None):
         super().__init__(sess)
         self.__config_sess()
+        self.create_virtual_openid()
         self.start_time = time.time()
 
     def __config_sess(self):
 
-        config = load_config(self.config_path)
+        config = self.load_config(self.config_path)
 
         # raw_cookie = config['buff']['requests_kwargs']['cookie']
         # simple_cookie = SimpleCookie(raw_cookie)
@@ -49,8 +50,8 @@ class Reserver(BaseSession):
 
         params = config['chaoyang']['payload']
         params['date'] = f"{params['site']}${params['date']}${params['time']}"
-        params.pop('site')
-        params.pop('time')
+        # params.pop('site')
+        # params.pop('time') # TODO Potential bug
         self.params = params
 
     def _post_payload(self, buff_api, params=None):
@@ -63,10 +64,12 @@ class Reserver(BaseSession):
         else:
             cp.print_success("Post successfully!")
 
-        text_pattern = re.compile(r'{(.+?)}', re.S)
+        post_text = post_res.text.replace('{"d":null}', '')
 
-        post_text = text_pattern.findall(post_res.text)
-        post_text =  f"{{{post_text[0]}}}"
+        ## Regular expression to deprive useless '{"d":null}' suffix is deprecated
+        # text_pattern = re.compile(r'{(.+?)}', re.S)
+        # post_text = text_pattern.findall(post_res.text)
+        # post_text =  f"{{{post_text[0]}}}"
         post_json = json.loads(post_text)
 
         return post_json
@@ -94,26 +97,44 @@ class Reserver(BaseSession):
 
         return data["data"]
 
+    def load_config(self, config_path=""):
+        config_path = config_path if config_path else "./config.json"
+        with open(config_path, "r", encoding='utf-8') as f:
+            config = json.load(f)
+        return config
+
+    def save_json(self, content, file_path):
+
+        json_dict = json.dumps(content, ensure_ascii=False, indent=4)
+        with open(file_path, 'w', encoding='utf-8') as json_file:
+            json_file.write(json_dict)
+            cp.print_success(f"Write to {file_path} successfully!")
+
     def create_virtual_openid(self, openid_len=64):
-        config = load_config()
+        config = self.load_config()
         if not config["chaoyang"]["payload"]["openid"]:
             rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=openid_len))
             cp.print_success(f"Create virtual openid successfully: {rand_str}")
             config["chaoyang"]["payload"]["openid"] = rand_str
 
-            json_dict = json.dumps(config, ensure_ascii=False, indent=4)
-            with open(self.config_path, 'w', encoding='utf-8') as json_file:
-                json_file.write(json_dict)
+            self.save_json(config, self.config_path)
 
     def reserve_seat(self):
 
         post_json = self._post_payload(self.base_url + self.url_submit)
-        print(post_json)
+        datetime = self.params["date"]+self.params["time"]
+        self.save_json(post_json, f"{datetime}.json")
 
 
-    def check_list(self):
-        tmp = "openid=1&con=a&pages=1"
-        params = str2params(tmp)
+    def check_list(self, con='a'):
+
+        assert con in ["a", "u"] # a: all, u: unused
+
+        params = {
+            "openid": self.params["openid"],
+            "con": "a",
+            "pages": 1 # TODO potential bug
+        }
 
         post_json = self._post_payload(self.base_url + self.url_check_list, params)
-        print(post_json)
+        self.save_json(post_json, "check_list.json")
