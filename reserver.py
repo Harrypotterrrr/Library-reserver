@@ -1,6 +1,7 @@
 import re
 import time
 import json
+import string
 import random
 import requests
 
@@ -19,6 +20,8 @@ class BaseSession:
 
 class Reserver(BaseSession):
 
+    config_path = "./config.json"
+
     base_url = 'https://yhkj.cylibyj.com'
 
     url_submit = "/Service.asmx/makeapp_submit"
@@ -35,7 +38,7 @@ class Reserver(BaseSession):
 
     def __config_sess(self):
 
-        config = load_config()
+        config = load_config(self.config_path)
 
         # raw_cookie = config['buff']['requests_kwargs']['cookie']
         # simple_cookie = SimpleCookie(raw_cookie)
@@ -91,8 +94,16 @@ class Reserver(BaseSession):
 
         return data["data"]
 
-    def create_virtual_openid(self):
-        pass
+    def create_virtual_openid(self, openid_len=64):
+        config = load_config()
+        if not config["chaoyang"]["payload"]["openid"]:
+            rand_str = ''.join(random.choices(string.ascii_uppercase + string.digits, k=openid_len))
+            cp.print_success(f"Create virtual openid successfully: {rand_str}")
+            config["chaoyang"]["payload"]["openid"] = rand_str
+
+            json_dict = json.dumps(config, ensure_ascii=False, indent=4)
+            with open(self.config_path, 'w', encoding='utf-8') as json_file:
+                json_file.write(json_dict)
 
     def reserve_seat(self):
 
