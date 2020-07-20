@@ -129,20 +129,27 @@ class Reserver(BaseSession):
 
     def reserve_seat(self):
 
-        params = copy.deepcopy(self.params)
-        params['date'] = f"{params['site']}${params['date']}${params['time']}"
-        params.pop('site')
-        params.pop('time')
+        if self.params["time"]:
+            time = [self.params["time"]]
+        else:
+            time = ["上午", "下午"]
 
-        post_json = self._post_payload(self.base_url + self.url_submit, params)
+        for t in time:
+            params = copy.deepcopy(self.params)
 
-        if post_json["reply"] == "ok":
-            print(post_json["list"][0]["msg"])
-        elif post_json["reply"] == "error":
-            cp.print_error(post_json["msg"])
+            params['date'] = f"{params['site']}${params['date']}${t}"
+            params.pop('site')
+            params.pop('time')
 
-        datetime = self.params["date"]+self.params["time"]
-        self.save_json(post_json, f"{self.record_path}/{datetime}.json")
+            post_json = self._post_payload(self.base_url + self.url_submit, params)
+
+            if post_json["reply"] == "ok":
+                print(post_json["list"][0]["msg"])
+            elif post_json["reply"] == "error":
+                cp.print_error(f'Error: {post_json["msg"]}')
+
+            datetime = self.params["date"]+t
+            self.save_json(post_json, f"{self.record_path}/{datetime}.json")
 
     def check_list(self, con='a'):
 
