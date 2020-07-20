@@ -1,6 +1,8 @@
+import os
 import re
 import time
 import json
+import copy
 import string
 import random
 import requests
@@ -21,6 +23,7 @@ class BaseSession:
 class Reserver(BaseSession):
 
     config_path = "./config.json"
+    record_path = "./record"
 
     base_url = 'https://yhkj.cylibyj.com'
 
@@ -34,6 +37,7 @@ class Reserver(BaseSession):
     def __init__(self, sess=None):
         super().__init__(sess)
         self.__config_sess()
+        self.__config_path()
         self.create_virtual_openid()
         self.start_time = time.time()
 
@@ -48,11 +52,15 @@ class Reserver(BaseSession):
 
         self.sess.headers['User-Agent'] = config['chaoyang']['requests_kwargs']['headers']['User-Agent'] # TODO use various User-Agent
 
-        params = config['chaoyang']['payload']
-        params['date'] = f"{params['site']}${params['date']}${params['time']}"
-        # params.pop('site')
-        # params.pop('time') # TODO Potential bug
-        self.params = params
+        self.params = config['chaoyang']['payload']
+        # params['date'] = f"{params['site']}${params['date']}${params['time']}"
+        # # params.pop('site')
+        # # params.pop('time') # TODO Potential bug
+
+    def __config_path(self):
+
+        if not os.path.exists(self.record_path):
+            os.makedirs(self.record_path)
 
     def _post_payload(self, buff_api, params=None):
 
@@ -62,7 +70,7 @@ class Reserver(BaseSession):
         if post_res.status_code != 200:
             raise Exception("fail to post!")
         else:
-            cp.print_success("Post successfully!")
+            cp.print_message("Post successfully!")
 
         post_text = post_res.text.replace('{"d":null}', '')
 
@@ -121,10 +129,20 @@ class Reserver(BaseSession):
 
     def reserve_seat(self):
 
-        post_json = self._post_payload(self.base_url + self.url_submit)
-        datetime = self.params["date"]+self.params["time"]
-        self.save_json(post_json, f"{datetime}.json")
+        params = copy.deepcopy(self.params)
+        params['date'] = f"{params['site']}${params['date']}${params['time']}"
+        params.pop('site')
+        params.pop('time')
 
+        post_json = self._post_payload(self.base_url + self.url_submit, params)
+
+        if post_json["reply"] == "ok":
+            print(post_json["list"][0]["msg"])
+        elif post_json["reply"] == "error":
+            cp.print_error(post_json["msg"])
+
+        datetime = self.params["date"]+self.params["time"]
+        self.save_json(post_json, f"{self.record_path}/{datetime}.json")
 
     def check_list(self, con='a'):
 
@@ -137,4 +155,4 @@ class Reserver(BaseSession):
         }
 
         post_json = self._post_payload(self.base_url + self.url_check_list, params)
-        self.save_json(post_json, "check_list.json")
+        self.save_json(post_json, f"{self.record_path}/check_list.json")
