@@ -1,6 +1,15 @@
 from reserver import Reserver
+from params import parse_argument
 
-reserver = Reserver()
-# reserver.reserve_seat()
-# reserver.check_list()
-reserver.create_ticket()
+args = parse_argument()
+
+reserver = Reserver(args=args)
+
+if args.reserve:
+    reserver.reserve_seat()
+if args.update:
+    reserver.check_list()
+if args.cancel:
+    reserver.cancel_reserve(args.cancel)
+if args.qrcode:
+    reserver.create_ticket()
