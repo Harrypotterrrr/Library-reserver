@@ -28,8 +28,9 @@ class Reserver(BaseSession):
 
     base_url = 'https://yhkj.cylibyj.com'
 
-    url_submit = "/Service.asmx/makeapp_submit"
     url_query = "/Service.asmx/makeapp_load"
+    url_submit = "/Service.asmx/makeapp_submit"
+    url_cancel = "/Service.asmx/makeapporder_cancel"
     url_check_list = "/Service.asmx/makeapporder_lists"
 
     interval_time = [3, 7] # TODO
@@ -69,7 +70,10 @@ class Reserver(BaseSession):
         post_res = self.sess.post(buff_api, json=params)
 
         if post_res.status_code != 200:
-            raise Exception("fail to post!")
+            post_json = json.loads(post_res.text)
+            cp.print_error(f"Post error! {post_json['Message']}")
+            exit(-1)
+            # raise Exception("Fail to post!")
         else:
             cp.print_message("Post successfully!")
 
@@ -152,6 +156,10 @@ class Reserver(BaseSession):
             datetime = self.params["date"]+t
             self.save_json(post_json, f"{self.record_path}/{datetime}.json")
 
+        self.check_list()
+        self.create_ticket()
+
+
     def check_list(self, con='a'):
 
         assert con in ["a", "u"] # a: all, u: unused
@@ -164,6 +172,26 @@ class Reserver(BaseSession):
 
         post_json = self._post_payload(self.base_url + self.url_check_list, params)
         self.save_json(post_json, f"{self.record_path}/check_list.json")
+
+    def cancel_reserve(self, order):
+
+        if not order:
+            cp.print_error("Order id should no be empty!")
+            exit(-1)
+
+        params = {
+            "order": order,
+        }
+
+        post_json = self._post_payload(self.base_url + self.url_cancel, params)
+
+        if post_json["reply"] == "ok":
+            cp.print_warning(f'Cancel order "{order}" successfully! {post_json["order_cancel"]}')
+            cp.print_info("Please check appointment information 'check_list.json' for more detail.")
+        elif post_json["reply"] == "error":
+            cp.print_error(f'Cancel order "{order}" failed! {post_json["msg"]}')
+
+        self.check_list()
 
     def create_ticket(self):
 
