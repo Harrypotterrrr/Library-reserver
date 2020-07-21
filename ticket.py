@@ -9,7 +9,7 @@ class Ticket():
 
     ticket_path = "./record"
 
-    def __init__(self, file_path, identity):
+    def __init__(self, identity, file_path="./record/check_list.json"):
 
         self.__load_params(file_path, identity)
 
@@ -49,7 +49,7 @@ class Ticket():
         self.w, self.h = 900, 1050
         self.interval_y1, self.interval_y2 = 70, 50
 
-        self.font_type = './Deng.ttf'
+        self.font_type = 'Deng' # TODO potential bug for Mac system: ttf format is not supported
         self.font_size1, self.font_size2 = 55, 35
         self.font1 = ImageFont.truetype(self.font_type, self.font_size1)
         self.font2 = ImageFont.truetype(self.font_type, self.font_size2)
@@ -59,15 +59,17 @@ class Ticket():
         self.wallpaper = Image.new("RGB", (self.w, self.h), "white")
         self.draw = ImageDraw.Draw(self.wallpaper)
 
+        # Begin drawing
         self.draw_header(payload)
         self.draw_qrcode(self.create_qrcode())
         self.draw_content(payload)
 
         self.wallpaper.save(ticket_path, 'png')
 
-        ticket_img = Image.open(ticket_path)
-        cticket_img = ticket_img.resize((self.w // 2, self.h // 2), Image.ANTIALIAS)
-        cticket_img.save(cticket_path)
+        # Create compressed ticket image
+        # ticket_img = Image.open(ticket_path)
+        # cticket_img = ticket_img.resize((self.w // 2, self.h // 2), Image.ANTIALIAS)
+        # cticket_img.save(cticket_path)
 
         cp.print_success(f"Successfully create library ticket for {img_name}")
 

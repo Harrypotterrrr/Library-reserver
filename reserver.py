@@ -13,6 +13,7 @@ from requests.cookies import cookiejar_from_dict
 
 from utils import ColorPrint as cp
 from utils import str2params
+from ticket import Ticket
 
 class BaseSession:
 
@@ -163,3 +164,8 @@ class Reserver(BaseSession):
 
         post_json = self._post_payload(self.base_url + self.url_check_list, params)
         self.save_json(post_json, f"{self.record_path}/check_list.json")
+
+    def create_ticket(self):
+
+        identity = f'{self.params["name"]} {self.params["idcard"]}'
+        ticket = Ticket(identity)
