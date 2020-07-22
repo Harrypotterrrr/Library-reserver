@@ -25,16 +25,18 @@ class Ticket():
 
         self.params = []
 
-        for i in range(len(config["list"])):
+        for item in (config["list"]):
+            if item["note"] != "预约成功":
+                continue
             tmp_dict = {}
-            tmp_dict["id"] = config["list"][i]["id"]
-            tmp_dict["order"] = config["list"][i]["order"]
-            tmp_dict["libname"] = config["list"][i]["libname"]
-            tmp_dict["Date"] = config["list"][i]["Date"]
-            tmp_dict["Session"] = config["list"][i]["Session"]
-            tmp_dict["Locationid"] = config["list"][i]["Locationid"]
-            tmp_dict["note"] = config["list"][i]["note"]
-            tmp_dict["time"] = config["list"][i]["time"]
+            tmp_dict["id"] = item["id"]
+            tmp_dict["order"] = item["order"]
+            tmp_dict["libname"] = item["libname"]
+            tmp_dict["Date"] = item["Date"]
+            tmp_dict["Session"] = item["Session"]
+            tmp_dict["Locationid"] = item["Locationid"]
+            tmp_dict["note"] = item["note"]
+            tmp_dict["time"] = item["time"]
             tmp_dict["identity"] = identity
 
             self.params.append(tmp_dict)
@@ -61,7 +63,7 @@ class Ticket():
 
         # Begin drawing
         self.draw_header(payload)
-        self.draw_qrcode(self.create_qrcode())
+        self.draw_qrcode(self.create_qrcode(payload["order"]))
         self.draw_content(payload)
 
         self.wallpaper.save(ticket_path, 'png')
@@ -114,7 +116,7 @@ class Ticket():
         self.draw.text((location_x, location_y), location, self.color, self.font2)
         self.draw.text((indentity_x, identity_y), payload["identity"], self.color, self.font2)
 
-    def create_qrcode(self):
+    def create_qrcode(self, order):
 
         qr = qrcode.QRCode(
             version=2,
@@ -122,7 +124,7 @@ class Ticket():
             box_size=20,
             border=1,
         )
-        qr.add_data("202007212000437282")
+        qr.add_data(order)
         qr.make(fit=True)
         img = qr.make_image(fill_color="black", back_color="white")
 
@@ -130,4 +132,4 @@ class Ticket():
 
 if __name__ == "__main__":
 
-    ticket = Ticket("./record/check_list.json", "贾昊霖 110xxxxxxxxxxxxxxx")
+    ticket = Ticket("./record/check_list.json", "贾xx 110xxxxxxxxxxxxxxx")
