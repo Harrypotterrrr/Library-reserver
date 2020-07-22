@@ -36,16 +36,19 @@ class Reserver(BaseSession):
     interval_time = [3, 7] # TODO
 
 
-    def __init__(self, sess=None):
+    def __init__(self, sess=None, args=None):
         super().__init__(sess)
-        self.__config_sess()
+        self.__config_sess(args)
         self.__config_path()
         self.create_virtual_openid()
         self.start_time = time.time()
 
-    def __config_sess(self):
+    def __config_sess(self, args=None):
 
-        config = self.load_config(self.config_path)
+        if args:
+            self.config_path = args.config
+
+        config = self.load_config()
 
         # raw_cookie = config['buff']['requests_kwargs']['cookie']
         # simple_cookie = SimpleCookie(raw_cookie)
@@ -110,9 +113,8 @@ class Reserver(BaseSession):
 
         return data["data"]
 
-    def load_config(self, config_path=""):
-        config_path = config_path if config_path else "./config.json"
-        with open(config_path, "r", encoding='utf-8') as f:
+    def load_config(self):
+        with open(self.config_path, "r", encoding='utf-8') as f:
             config = json.load(f)
         return config
 
@@ -150,7 +152,8 @@ class Reserver(BaseSession):
 
             if post_json["reply"] == "ok":
                 print(post_json["list"][0]["msg"])
-            elif post_json["reply"] == "error":
+            # elif post_json["reply"] == "error": # TODO potential bug: other error string
+            else:
                 cp.print_error(f'Error: {post_json["msg"]}')
 
             datetime = self.params["date"]+t
@@ -188,7 +191,8 @@ class Reserver(BaseSession):
         if post_json["reply"] == "ok":
             cp.print_warning(f'Cancel order "{order}" successfully! {post_json["order_cancel"]}')
             cp.print_info("Please check appointment information 'check_list.json' for more detail.")
-        elif post_json["reply"] == "error":
+        # elif post_json["reply"] == "error": # TODO potential bug: other error string
+        else:
             cp.print_error(f'Cancel order "{order}" failed! {post_json["msg"]}')
 
         self.check_list()
