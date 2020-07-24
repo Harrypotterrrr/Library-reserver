@@ -1,0 +1,34 @@
+{
+    "main": {
+        "interval_time": [
+            3,
+            7
+        ]
+    },
+    "chaoyang": {
+        "payload": {
+            "name": "XXX",
+            "idcard": "110xxxxxxxxxxxxxxx",
+            "phone": "13xxxxxxxxx",
+            "sex": "x",
+            "add": "北京市西城区",
+            "tiwen": "36",
+            "addrs": "北京市xxxxxxxxxxxx",
+            "date": "2020-07-22",
+            "time": "",
+            "site": "劲松馆",
+            "seat": "D2",
+            "openid": "QTF548EL3SD1GJXHNKTYVLNZRN7BQN0XJ3YQMWY8V48W2MKA780BACYECXZAKAE1",
+            "activity": "",
+            "pic1": "",
+            "pic2": "",
+            "card": ""
+        },
+        "requests_kwargs": {
+            "headers": {
+                "User-Agent": "User-Agent: Mozilla/5.0 (Linux; Android 5.1; HUAWEI TAG-TL00 Build/HUAWEITAG-TL00; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/78.0.3904.62 XWEB/2570 MMWEBSDK/200601 Mobile Safari/537.36 MMWEBID/7949 MicroMessenger/7.0.16.1700(0x27001034) Process/appbrand2 WeChat/arm32 NetType/WIFI Language/zh_CN ABI/arm64"
+            },
+            "cookie": ""
+        }
+    }
+}
