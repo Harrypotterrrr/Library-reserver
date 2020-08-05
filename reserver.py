@@ -163,13 +163,13 @@ class Reserver(BaseSession):
         self.create_ticket()
 
 
-    def check_list(self, con='a'):
+    def check_list(self, con='u'):
 
         assert con in ["a", "u"] # a: all, u: unused
 
         params = {
             "openid": self.params["openid"],
-            "con": "a",
+            "con": con,
             "pages": 1 # TODO potential bug
         }
 
