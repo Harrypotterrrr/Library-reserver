@@ -158,7 +158,8 @@ class Reserver(BaseSession):
         else:
             cp.print_error(f'Error: {post_json["msg"]}')
 
-        datetime = self.params["date"]+t
+        # datetime = self.params["date"]+t
+        datetime = self.params["date"]
         self.save_json(post_json, f"{self.record_path}/{datetime}.json")
 
         self.check_list()
