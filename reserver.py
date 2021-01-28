@@ -163,8 +163,6 @@ class Reserver(BaseSession):
         self.save_json(post_json, f"{self.record_path}/{datetime}.json")
 
         self.check_list()
-        self.create_ticket()
-
 
     def check_list(self, con='u'):
 
@@ -178,6 +176,7 @@ class Reserver(BaseSession):
 
         post_json = self._post_payload(self.base_url + self.url_check_list, params)
         self.save_json(post_json, f"{self.record_path}/check_list.json")
+        self.create_ticket()
 
     def cancel_reserve(self, order):
 
