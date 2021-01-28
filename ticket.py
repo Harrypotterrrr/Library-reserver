@@ -33,8 +33,8 @@ class Ticket():
             tmp_dict["order"] = item["order"]
             tmp_dict["libname"] = item["libname"]
             tmp_dict["Date"] = item["Date"]
-            tmp_dict["Session"] = item["Session"]
-            tmp_dict["Locationid"] = item["Locationid"]
+            # tmp_dict["Session"] = item["Session"]
+            # tmp_dict["Locationid"] = item["Locationid"]
             tmp_dict["note"] = item["note"]
             tmp_dict["time"] = item["time"]
             tmp_dict["identity"] = identity
@@ -43,7 +43,8 @@ class Ticket():
 
     def create_ticket(self, payload):
 
-        img_name = f'{payload["Date"]}{payload["Session"][:2]}.png'
+        # img_name = f'{payload["Date"]}{payload["Session"][:2]}.png'
+        img_name = f'{payload["Date"]}.png'
 
         ticket_path = self.ticket_path + f'/{img_name}'  # original ticket
         cticket_path = self.ticket_path + f'/d_{img_name}'  # compressed ticket
@@ -98,22 +99,24 @@ class Ticket():
 
     def draw_content(self, payload):
 
-        datetime = f'{payload["Date"]} {payload["Session"]}'
-        location = f'进馆序号：{payload["Locationid"]}'
+        datetime = f'{payload["Date"]}'
+        # datetime = f'{payload["Date"]} {payload["Session"]}'
+        # location = f'进馆序号：{payload["Locationid"]}'
 
         libname_w, libname_h = self.draw.textsize(payload["libname"], font=self.font1)
         datetime_w, datetime_h = self.draw.textsize(datetime, font=self.font2)
-        location_w, location_h = self.draw.textsize(location, font=self.font2)
+        # location_w, location_h = self.draw.textsize(location, font=self.font2)
         indentity_w, identity_h = self.draw.textsize(payload["identity"], font=self.font2)
 
         libname_x, libname_y = (self.w - libname_w) // 2, 770
         datetime_x, datetime_y = (self.w - datetime_w) // 2, libname_y + self.interval_y1
-        location_x, location_y = (self.w - location_w) // 2, datetime_y + self.interval_y2
-        indentity_x, identity_y = (self.w - indentity_w) // 2, location_y + self.interval_y2
+        # location_x, location_y = (self.w - location_w) // 2, datetime_y + self.interval_y2
+        # indentity_x, identity_y = (self.w - indentity_w) // 2, location_y + self.interval_y2
+        indentity_x, identity_y = (self.w - indentity_w) // 2, datetime_y + self.interval_y2
 
         self.draw.text((libname_x, libname_y), payload["libname"], self.color, self.font1)
         self.draw.text((datetime_x, datetime_y), datetime, self.color, self.font2)
-        self.draw.text((location_x, location_y), location, self.color, self.font2)
+        # self.draw.text((location_x, location_y), location, self.color, self.font2)
         self.draw.text((indentity_x, identity_y), payload["identity"], self.color, self.font2)
 
     def create_qrcode(self, order):
