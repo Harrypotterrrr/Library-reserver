@@ -28,10 +28,11 @@ class Reserver(BaseSession):
 
     base_url = 'https://yhkj.cylibyj.com'
 
-    url_query = "/Service.asmx/makeapp_load"
-    url_submit = "/Service.asmx/makeapp_submit"
-    url_cancel = "/Service.asmx/makeapporder_cancel"
-    url_check_list = "/Service.asmx/makeapporder_lists"
+    url_suffix = "1001"
+    url_query = "/Service.asmx/makeapp_load" + url_suffix
+    url_submit = "/Service.asmx/makeapp_submit" + url_suffix
+    url_cancel = "/Service.asmx/makeapporder_cancel" + url_suffix
+    url_check_list = "/Service.asmx/makeapporder_lists" + url_suffix
 
     interval_time = [3, 7] # TODO
 
@@ -47,7 +48,6 @@ class Reserver(BaseSession):
 
         if args:
             self.config_path = args.config
-
         config = self.load_config()
 
         # raw_cookie = config['buff']['requests_kwargs']['cookie']
@@ -136,28 +136,30 @@ class Reserver(BaseSession):
 
     def reserve_seat(self):
 
-        if self.params["time"]:
-            time = [self.params["time"]]
+        # if self.params["time"]:
+        #     time = [self.params["time"]]
+        # else:
+        #     time = ["上午", "下午"]
+
+        # for t in time:
+        ## remove time
+
+        params = copy.deepcopy(self.params)
+
+        params['date'] = f"{params['site']}${params['date']}"
+        params.pop('site')
+        params.pop('time')
+
+        post_json = self._post_payload(self.base_url + self.url_submit, params)
+
+        if post_json["reply"] == "ok":
+            print(post_json["list"][0]["msg"])
+        # elif post_json["reply"] == "error": # TODO potential bug: other error string
         else:
-            time = ["上午", "下午"]
+            cp.print_error(f'Error: {post_json["msg"]}')
 
-        for t in time:
-            params = copy.deepcopy(self.params)
-
-            params['date'] = f"{params['site']}${params['date']}${t}"
-            params.pop('site')
-            params.pop('time')
-
-            post_json = self._post_payload(self.base_url + self.url_submit, params)
-
-            if post_json["reply"] == "ok":
-                print(post_json["list"][0]["msg"])
-            # elif post_json["reply"] == "error": # TODO potential bug: other error string
-            else:
-                cp.print_error(f'Error: {post_json["msg"]}')
-
-            datetime = self.params["date"]+t
-            self.save_json(post_json, f"{self.record_path}/{datetime}.json")
+        datetime = self.params["date"]+t
+        self.save_json(post_json, f"{self.record_path}/{datetime}.json")
 
         self.check_list()
         self.create_ticket()
