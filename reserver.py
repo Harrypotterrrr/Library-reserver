@@ -34,9 +34,6 @@ class Reserver(BaseSession):
     url_cancel = "/Service.asmx/makeapporder_cancel" + url_suffix
     url_check_list = "/Service.asmx/makeapporder_lists" + url_suffix
 
-    interval_time = [3, 7] # TODO
-
-
     def __init__(self, sess=None, args=None):
         super().__init__(sess)
         self.__config_sess(args)
@@ -61,6 +58,8 @@ class Reserver(BaseSession):
         # params['date'] = f"{params['site']}${params['date']}${params['time']}"
         # # params.pop('site')
         # # params.pop('time') # TODO Potential bug
+
+        self.interval_time = config["main"]["interval_time"]
 
     def __config_path(self):
 
@@ -150,22 +149,30 @@ class Reserver(BaseSession):
         params.pop('site')
         params.pop('time')
 
-        while True:
-            self.end_time = time.time()
-            r_num = random.uniform(self.interval_time[0], self.interval_time[1])
-            if self.end_time - self.start_time < self.interval_time[0]:
-                cp.print_message(f"sleep {r_num:.2f}s, current time: {time.strftime('%H:%M:%S')}")
-                time.sleep(r_num)
+        post_json = self._post_payload(self.base_url + self.url_submit, params)
+        self.start_time = time.time()
 
-            post_json = self._post_payload(self.base_url + self.url_submit, params)
-            self.start_time = time.time()
+        if post_json["reply"] == "ok":
+            print(post_json["list"][0]["msg"])
+        else:
+            cp.print_error(f'Error: {post_json["msg"]}')
+            
+            while True:
+                self.end_time = time.time()
+                r_num = random.uniform(self.interval_time[0], self.interval_time[1])
+                if self.end_time - self.start_time < self.interval_time[0]:
+                    cp.print_message(f"sleep {r_num:.2f}s, current time: {time.strftime('%H:%M:%S')}")
+                    time.sleep(r_num)
 
-            if post_json["reply"] == "ok":
-                print(post_json["list"][0]["msg"])
-                break
-            # elif post_json["reply"] == "error": # TODO potential bug: other error string
-            else:
-                cp.print_error(f'Error: {post_json["msg"]}')
+                post_json = self._post_payload(self.base_url + self.url_submit, params)
+                self.start_time = time.time()
+
+                if post_json["reply"] == "ok":
+                    print(post_json["list"][0]["msg"])
+                    break
+                # elif post_json["reply"] == "error": # TODO potential bug: other error string
+                else:
+                    cp.print_error(f'Error: {post_json["msg"]}')
 
         # datetime = self.params["date"]+t
         datetime = self.params["date"]
